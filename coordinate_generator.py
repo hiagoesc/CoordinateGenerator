@@ -29,6 +29,7 @@
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
+from PyQt5.QtWidgets import QMessageBox
 
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -237,6 +238,36 @@ class CoordinateGenerator:
             # Remove icon from toolbar
             self.iface.removeToolBarIcon(action)
 
+    def update_active_layer(self):
+        """Checks the active layer in QGIS."""
+        
+        # Get the active layer through the QGIS interface
+        layer = self.iface.activeLayer()
+
+        # Checks if there is an active layer
+        if layer is None:
+
+            # Display an error message if there is no active layer
+            QMessageBox.warning(self.dlg, "Attention", "There is no active layer selected!")
+
+            # Returns False if there is no active layer
+            return False
+        
+        # Returns the layer if there is active layer
+        return layer
+    
+    def populate_field_list(self, layer):
+        """Populates the QListWidget with the field names from the active layer."""
+
+        # Clear the previous list
+        self.listWidgetFields.clear()
+
+        if layer:
+            fields = layer.fields().names()
+            self.listWidgetFields.addItems(fields)
+        else:
+            QMessageBox.warning(self, "Atenção", "Não há camada ativa selecionada.")
+
     def run(self):
         """Run method that performs all the real work"""
 
@@ -245,6 +276,18 @@ class CoordinateGenerator:
         if self.first_start == True: # Checks if this is the first run of the plugin
             self.first_start = False # Sets the flag to False, to prevent future creation of the dialog
             self.dlg = CoordinateGeneratorDialog(self.iface) # Creates a new instance of the dialog
+
+        # Update active layer
+        self.active_layer = self.update_active_layer()
+        
+        if not self.active_layer:
+
+            # If there is no active layer, do not proceed
+            return  
+        
+        else:
+            # Populates the QListWidget with the field names from the active layer
+            self.dlg.populate_field_list(self.active_layer)
 
         # show the dialog
         self.dlg.show()
