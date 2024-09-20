@@ -21,20 +21,44 @@
  *                                                                         *
  ***************************************************************************/
 """
+
+# QSettings: Used to store persistent user settings
+# QTranslator: Used to manage translations, allowing the plugin to support multiple languages
+# QCoreApplication: Base class for all Qt applications
+# QIcon e QAction: Used to create icons and actions (such as menu items or buttons)
+# s
+# QSettings: Usada para armazenar configurações de usuário persistentes
+# QTranslator: Usada para gerenciar traduções, permitindo que o plugin suporte múltiplos idiomas
+# QCoreApplication: Classe base para todas as aplicações Qt
+# QIcon e QAction: Usados para criar ícones e ações (como itens de menu ou botões)
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
 # Initialize Qt resources from file resources.py
+# 
+# Inicializa recursos Qt do arquivo resources.py
 from .resources import *
-# Import the code for the dialog
+
+# Import the code for the dialog (graphical interface)
+# 
+# Importa o código para a caixa de diálogo (interface gráfica)
 from .coordinate_generator_dialog import CoordinateGeneratorDialog
+
+# Library used for file path manipulations
+# 
+# Biblioteca usada para manipulações de caminho de arquivos
 import os.path
 
-
+# Core logic of the plugin and how it interacts with the QGIS interface
+# 
+# Lógica principal do plugin e como ele interage com a interface do QGIS
 class CoordinateGenerator:
     """QGIS Plugin Implementation."""
 
+    # Creates a new instance of the CoordinateGenerator class
+    # 
+    # Cria uma nova instância da classe CoordinateGenerator
     def __init__(self, iface):
         """Constructor.
 
@@ -43,30 +67,86 @@ class CoordinateGenerator:
             application at run time.
         :type iface: QgsInterface
         """
-        # Save reference to the QGIS interface
+
+        # iface parameter is the QGIS interface instance
+        # Allows the plugin to interact with the QGIS application in real time
+        # 
+        # Parâmetro iface é a instância da interface QGIS
+        # Permite que o plugin interaja com a aplicação QGIS em tempo real
         self.iface = iface
-        # initialize plugin directory
+
+        # Gets the directory of the plugin's Python file
+        # Useful for assembling resource paths or other plugin dependencies
+        # 
+        # Obtém o c
+        # Útil para montar caminhos de recursos ou outras dependências do plugin
         self.plugin_dir = os.path.dirname(__file__)
-        # initialize locale
+
+        # Gets the user's locale setting
+        # Gets the first two characters of the locale code
+        # ("pt" for Portuguese or "en" for English, for example)
+        # 
+        # Obtém a configuração de localidade do usuário
+        # Obtém os dois primeiros caracteres do código da localidade
+        # ("pt" para Português ou "en" para Inglês, por exemplo)
         locale = QSettings().value('locale/userLocale')[0:2]
+
+        # Mount the translation file path using the plugin directory
+        # 
+        # Monta o caminho do arquivo de tradução usando o diretório do plugin
         locale_path = os.path.join(
             self.plugin_dir,
             'i18n',
             'CoordinateGenerator_{}.qm'.format(locale))
 
+        # Checks if the translation file exists
+        # 
+        # Verifica se o arquivo de tradução existe
         if os.path.exists(locale_path):
+
+            # Load the translation
+            # 
+            # Carrega a tradução
             self.translator = QTranslator()
             self.translator.load(locale_path)
+
+            # Install the translation in the application
+            # 
+            # Instala a tradução no aplicativo
             QCoreApplication.installTranslator(self.translator)
 
-        # Declare instance attributes
+        # Declares list that can be used to store actions (such as menu items) that the plugin creates
+        # 
+        # Declara lista que pode ser usada para armazenar ações (como itens de menu) que o plugin cria
         self.actions = []
+
+        # Declares the menu text where the plugin will be listed
+        # The self.tr() method marks the string for translation
+        # 
+        # Declara o texto do menu onde o plugin será listado
+        # O método self.tr() marca a string para tradução
         self.menu = self.tr(u'&Coordinate Generator')
 
         # Check if plugin was started the first time in current QGIS session
-        # Must be set in initGui() to survive plugin reloads
+        # Must be set in initGui() method to survive plugin reloads
+        # 
+        # Verifique se o plugin foi iniciado pela primeira vez na sessão atual do QGIS
+        # Pode ser configurado em um método initGui() para sobreviver às recargas do plugin
         self.first_start = None
 
+    # Method to translate strings within the plugin
+    # Uses the Qt translation system
+    # 
+    # Método para traduzir strings dentro do plugin
+    # Utiliza o sistema de tradução do Qt
+    #
+    # 
+    # Warning that an instance method is not using self
+    # Suggests that the method can be defined as a static method
+    #
+    # Aviso de que um método de instância não está usando self
+    # Sugere que o método pode ser definido como um método estático
+    
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
