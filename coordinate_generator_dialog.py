@@ -51,13 +51,13 @@ class CoordinateGeneratorDialog(QtWidgets.QDialog, FORM_CLASS):
         self.btnSelectFolder.clicked.connect(self.open_folder_dialog)  # 'btnSelectFolder' está diretamente acessível
 
         # Atualiza o QTextBrowser com o nome da camada ativa
-        self.update_active_layer_name()
+        # self.update_active_layer_name()
 
         # Atualiza o QWidgetLista com os campos da camada ativa
-        self.populate_field_list()
+        # self.populate_field_list()
 
         # Conectando o botão OK do QDialogButtonBox ao método
-        self.btnBox.accepted.connect(self.on_ok_clicked)
+        # self.btnBox.accepted.connect(self.on_ok_clicked)
 
     def open_folder_dialog(self):
         # Open the dialog to select a folder
