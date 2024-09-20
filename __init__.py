@@ -26,37 +26,22 @@
 # Avoid warnings about compliance with the PEP 8 style guide (standard Python naming convention)
 # (which suggests class names start with capitalized letters)
 # 
-# Evitar avisos sobre a conformidade com o style guide PEP 8 (convenção de nomenclatura padrão do Python)
-# (que sugere que os nomes de classes comecem com letras maiúsculas)
-# 
-# 
 # Pylint is a tool that checks Python code for potential errors
 # Pylint is being told that a specific naming convention is being followed
 # Due to compatibility with the QGIS plugin system
-# 
-# Pylint é uma ferramenta que verifica o código Python em busca de potenciais erros
-# Está sendo avisado ao Pylint que está sendo seguida uma convenção de nomenclatura específica
-# Devido à compatibilidade com o sistema de plugins do QGIS
 
 # noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name
-    """Load CoordinateGenerator class from file CoordinateGenerator |
-    Carrega a classe CoordinateGenerator do arquivo CoordinateGenerator 
+    """Load CoordinateGenerator class from file CoordinateGenerator.
 
-    :param iface: A QGIS interface instance | Instância da interface do QGIS
-    :type iface: QgsInterface | Interface do QGIS
+    :param iface: A QGIS interface instance
+    :type iface: QgsInterface
     """
 
     # imports the CoordinateGenerator class from coordinate_generator.py file
     # (which resides in the same directory, indicated by the dot .)
-    # 
-    # importa a classe CoordinateGenerator do arquivo coordinate_generator.py
-    # (que reside no mesmo diretório, indicado pelo ponto .)
     from .coordinate_generator import CoordinateGenerator
 
     # returns a new instance of the CoordinateGenerator class
     # passes the iface instance (QGIS interface instance) to the class constructor
-    # 
-    # retorna uma nova instância da classe CoordinateGenerator
-    # passa a instância iface (instância da interface do QGIS) para o construtor da classe
     return CoordinateGenerator(iface)

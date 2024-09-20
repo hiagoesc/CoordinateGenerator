@@ -26,39 +26,23 @@
 # QTranslator: Used to manage translations, allowing the plugin to support multiple languages
 # QCoreApplication: Base class for all Qt applications
 # QIcon e QAction: Used to create icons and actions (such as menu items or buttons)
-# s
-# QSettings: Usada para armazenar configurações de usuário persistentes
-# QTranslator: Usada para gerenciar traduções, permitindo que o plugin suporte múltiplos idiomas
-# QCoreApplication: Classe base para todas as aplicações Qt
-# QIcon e QAction: Usados para criar ícones e ações (como itens de menu ou botões)
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
 # Initialize Qt resources from file resources.py
-# 
-# Inicializa recursos Qt do arquivo resources.py
 from .resources import *
 
-# Import the code for the dialog (graphical interface)
-# 
-# Importa o código para a caixa de diálogo (interface gráfica)
+# Import the code for the dialog (user interface)
 from .coordinate_generator_dialog import CoordinateGeneratorDialog
 
 # Library used for file path manipulations
-# 
-# Biblioteca usada para manipulações de caminho de arquivos
 import os.path
 
 # Core logic of the plugin and how it interacts with the QGIS interface
-# 
-# Lógica principal do plugin e como ele interage com a interface do QGIS
 class CoordinateGenerator:
     """QGIS Plugin Implementation."""
 
-    # Creates a new instance of the CoordinateGenerator class
-    # 
-    # Cria uma nova instância da classe CoordinateGenerator
     def __init__(self, iface):
         """Constructor.
 
@@ -70,82 +54,46 @@ class CoordinateGenerator:
 
         # iface parameter is the QGIS interface instance
         # Allows the plugin to interact with the QGIS application in real time
-        # 
-        # Parâmetro iface é a instância da interface QGIS
-        # Permite que o plugin interaja com a aplicação QGIS em tempo real
         self.iface = iface
 
         # Gets the directory of the plugin's Python file
         # Useful for assembling resource paths or other plugin dependencies
-        # 
-        # Obtém o c
-        # Útil para montar caminhos de recursos ou outras dependências do plugin
         self.plugin_dir = os.path.dirname(__file__)
 
         # Gets the user's locale setting
         # Gets the first two characters of the locale code
         # ("pt" for Portuguese or "en" for English, for example)
-        # 
-        # Obtém a configuração de localidade do usuário
-        # Obtém os dois primeiros caracteres do código da localidade
-        # ("pt" para Português ou "en" para Inglês, por exemplo)
         locale = QSettings().value('locale/userLocale')[0:2]
 
         # Mount the translation file path using the plugin directory
-        # 
-        # Monta o caminho do arquivo de tradução usando o diretório do plugin
         locale_path = os.path.join(
             self.plugin_dir,
             'i18n',
             'CoordinateGenerator_{}.qm'.format(locale))
 
         # Checks if the translation file exists
-        # 
-        # Verifica se o arquivo de tradução existe
         if os.path.exists(locale_path):
 
-            # Load the translation
-            # 
-            # Carrega a tradução
+            # Load the translator
             self.translator = QTranslator()
             self.translator.load(locale_path)
 
-            # Install the translation in the application
-            # 
-            # Instala a tradução no aplicativo
+            # Install the translator in the application
             QCoreApplication.installTranslator(self.translator)
 
-        # Declares list that can be used to store actions (such as menu items) that the plugin creates
-        # 
-        # Declara lista que pode ser usada para armazenar ações (como itens de menu) que o plugin cria
+        # Declares a list that can be used to store actions (such as menu items) that the plugin creates
         self.actions = []
 
         # Declares the menu text where the plugin will be listed
         # The self.tr() method marks the string for translation
-        # 
-        # Declara o texto do menu onde o plugin será listado
-        # O método self.tr() marca a string para tradução
         self.menu = self.tr(u'&Coordinate Generator')
 
-        # Check if plugin was started the first time in current QGIS session
+        # Check if plugin was started for the first time in current QGIS session
         # Must be set in initGui() method to survive plugin reloads
-        # 
-        # Verifique se o plugin foi iniciado pela primeira vez na sessão atual do QGIS
-        # Pode ser configurado em um método initGui() para sobreviver às recargas do plugin
         self.first_start = None
 
-    # Method to translate strings within the plugin
-    # Uses the Qt translation system
-    # 
-    # Método para traduzir strings dentro do plugin
-    # Utiliza o sistema de tradução do Qt
-    #
-    # 
     # Warning that an instance method is not using self
     # Suggests that the method can be defined as a static method
-    #
-    # Aviso de que um método de instância não está usando self
-    # Sugere que o método pode ser definido como um método estático
     
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -159,9 +107,14 @@ class CoordinateGenerator:
         :returns: Translated version of message.
         :rtype: QString
         """
+
+        # Notices for the IDE:
+        # Ignore type mismatch warning
+        # Ignore argument list that does not match expected argument list
+        # Ignore which class method is being called in a way that does not follow convention
+
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('CoordinateGenerator', message)
-
 
     def add_action(
         self,
@@ -213,67 +166,95 @@ class CoordinateGenerator:
         :rtype: QAction
         """
 
+        # Creates an icon from the given path
         icon = QIcon(icon_path)
+
+        # Creates a new QAction object that represents the action
         action = QAction(icon, text, parent)
+
+        # Connects the action to the callback method
+        # which means the function will be called when the action is activated
         action.triggered.connect(callback)
+
+        # Defines whether the action should be enabled or not
         action.setEnabled(enabled_flag)
 
         if status_tip is not None:
+            # Set pop-up text tip if any
             action.setStatusTip(status_tip)
 
         if whats_this is not None:
+            # Set text in the status bar if any
             action.setWhatsThis(whats_this)
 
         if add_to_toolbar:
-            # Adds plugin icon to Plugins toolbar
+            # Adds the plugin icon to Plugins toolbar
             self.iface.addToolBarIcon(action)
 
         if add_to_menu:
+            # Adds the plugin to menu
             self.iface.addPluginToMenu(
                 self.menu,
                 action)
 
+        # Adds the action to the action list
         self.actions.append(action)
 
+        # Return the action
         return action
 
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
+        # Sets the plugin icon path
+        # :/ indicates that it is a feature embedded in the plugin's resource file
         icon_path = ':/plugins/coordinate_generator/icon.png'
+        
+        # Add a new action to the QGIS menu and toolbar
+        # parent parameter defines the main QGIS window
         self.add_action(
             icon_path,
             text=self.tr(u'Generate coordinates'),
             callback=self.run,
             parent=self.iface.mainWindow())
 
-        # will be set False in run()
+        # Initializes an attribute to control whether the plugin was started for the first time
+        # Allows the plugin dialog to be created once and reused later
+        # Will be set False in run()
         self.first_start = True
-
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
+
+        # For each action that was added to the self.actions list
         for action in self.actions:
+
+            # Removes the menu entry that was created
             self.iface.removePluginMenu(
                 self.tr(u'&Coordinate Generator'),
                 action)
+            
+            # Remove icon from toolbar
             self.iface.removeToolBarIcon(action)
-
 
     def run(self):
         """Run method that performs all the real work"""
 
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
-        if self.first_start == True:
-            self.first_start = False
-            self.dlg = CoordinateGeneratorDialog(self.iface) # Passa iface como argumento
+        if self.first_start == True: # Checks if this is the first run of the plugin
+            self.first_start = False # Sets the flag to False, to prevent future creation of the dialog
+            self.dlg = CoordinateGeneratorDialog(self.iface) # Creates a new instance of the dialog
 
         # show the dialog
         self.dlg.show()
+
         # Run the dialog event loop
+        # Blocks subsequent code execution until the dialog is closed
         result = self.dlg.exec_()
-        # See if OK was pressed
+
+        # Checks whether the dialog was closed successfully, if OK was pressed
+        # implementation of what the plugin actually does after the user interacts with the GUI
         if result:
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
