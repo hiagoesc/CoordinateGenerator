@@ -272,24 +272,39 @@ class CoordinateGenerator:
         """Gets the list of fields selected by the user."""
 
         # Stores the fields of the active layer
-        selected_fields = self.dlg.lstFields.selectedItems()
+        self.selected_fields = self.dlg.lstFields.selectedItems()
+
+        if not self.selected_fields:
+
+            # Displays message that no field has been selected
+            QMessageBox.warning(self, "Attention", "No field was selected.")
+
+            # Returns False if no field is selected
+            return False
 
         # Stores the field names of the active layer
-        selected_field_names = [item.text() for item in selected_fields]
+        self.selected_field_names = [item.text() for item in self.selected_fields]
 
         # Returns the list of field names
-        return selected_field_names
+        return self.selected_field_names
 
     def construct_file_name(self, feature, selected_fields):
         """Constructs the file name based on the selected fields and their values."""
 
-        field_values = []
-        for field in selected_fields:
-            value = feature[field]  # Obtém o valor do campo
-            field_values.append(f"{field}-{value}")
+        # Creates a list to store the values ​​of the selected fields of the polygon
+        self.field_values = []
 
-        # Une os valores no formato desejado
-        return "_".join(field_values)
+        # Iterates over selected fields
+        for field in selected_fields:
+
+            # Stores the value of the polygon field
+            value = feature[field]
+
+            # Includes a string with the field name and its value in the list
+            self.field_values.append(f"{field}-{value}")
+
+        # Returns a string that joins all fields and values ​​separated by underscores
+        return "_".join(self.field_values)
 
     def save_polygon_coordinates(self, layer, selected_fields, folder):
         """Saves the coordinates of selected polygons to text files."""
@@ -300,18 +315,26 @@ class CoordinateGenerator:
         # Iterates over the selected polygons
         for feature in self.features:
 
-            # Constructs the name of the file to be generated
+            # Constructs the name of the file to be generated for the polygon
             self.file_name = self.construct_file_name(feature, selected_fields)
 
+            # Joins the path of the selected folder with the name created for the file
             file_path = os.path.join(folder, f"{self.file_name}.txt")
             
-            # Salva as coordenadas no arquivo
+            # Create the file
             with open(file_path, 'w') as f:
+
+                # Stores the geometry of the polygon
                 geometry = feature.geometry()
+
+                # Creates a list of geometry vertices
                 vertices = list(geometry.vertices())
 
-                # Salva os vértices na ordem original
+                # Iterates over the vertices of the geometry
+                # (with the exception of the last vertex which repeats the first)
                 for vertex in vertices[:-1]:
+
+                    # Saves the x and y coordinates separated by spaces in the file and skips to the next line
                     f.write(f"{vertex.x()} {vertex.y()}\n")
 
     def run(self):
@@ -332,6 +355,7 @@ class CoordinateGenerator:
             return  
         
         else:
+
             # Populates the QListWidget with the field names from the active layer
             self.dlg.populate_field_list(self.active_layer)
 
@@ -345,25 +369,32 @@ class CoordinateGenerator:
         # Checks whether the dialog was closed successfully, if OK was pressed
         # implementation of what the plugin actually does after the user interacts with the GUI
         if result:
+            
+            # Stores the path of the selected folder
+            self.folder = self.dlg.txtSelectFolder.toPlainText()
 
-            # Armazenar o caminho da pasta
-            # Ou encerrar caso não tenha sido selecionado uma
+            # checks if folder is an empty string
+            if not self.folder:
+
+                # Displays message that no folder has been selected
+                QMessageBox.warning(self, "Attention", "No folder selected.")
+
+                # Closes the plugin
+                return
 
             # Get selected fields from dialog
-            selected_fields = self.get_selected_fields()
+            self.selected_fields = self.get_selected_fields()
             
-            # If the selected fields are obtained successfully            
-            if selected_fields:
-                
-                # Stores the path of the selected folder
-                self.folder = self.dlg.txtSelectFolder.toPlainText()
+            if not self.selected_fields:
 
+                # If there is no field selected, do not proceed.
+                return  
+            
+            # Run the method to generate the coordinate files
+            self.save_polygon_coordinates(self.active_layer, self.selected_fields, self.folder)
 
-                self.save_polygon_coordinates(selected_fields, self.folder)
+            # Display success message
+            QMessageBox.information(self, "Completed", "All files have been saved successfully!")
 
-            # encerrar caso não tenham sidos selecionados campos
-
-            # mensagem de sucesso e encerrar
-
-            # return?
-            pass
+            # Closes the plugin
+            return

@@ -32,118 +32,50 @@ from qgis.core import QgsProject
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'coordinate_generator_dialog_base.ui'))
 
-
 class CoordinateGeneratorDialog(QtWidgets.QDialog, FORM_CLASS):
+    """QGIS Plugin Dialog."""
+
     def __init__(self, iface, parent=None):
-        """Constructor."""
+        """Constructor.
+        
+        :param iface: An interface instance that will be passed to this class
+            which provides the hook by which you can manipulate the QGIS
+            application at run time.
+        :type iface: QgsInterface
+        """
+
+        # The super() function is used to call methods of the superclass (or parent class)
+        # Clls the constructor of the superclass QDialog
+        # parent refers to the parent window of the graphical user interface
+        # Ensures that the dialog is displayed correctly in the context of the QGIS interface.
         super(CoordinateGeneratorDialog, self).__init__(parent)
-        # Set up the user interface from Designer through FORM_CLASS.
+
+        # Set up the user interface from Designer through FORM_CLASS
         self.setupUi(self)
         
-        # Exemplo no __init__
+        # Check if QGIS interface (iface) is available
         if iface is None:
-            QMessageBox.critical(None, "Erro", "Interface QGIS (iface) não está disponível.")
+
+            # Display error message if interface is not available
+            QMessageBox.critical(None, "Error", "QGIS interface is not available.")
+
+            # Encerra o método construtor
             return
 
-        self.iface = iface  # Armazena a referência do iface
+        # Stores the iface reference
+        self.iface = iface
 
-        # Connect the button to the method
-        self.btnSelectFolder.clicked.connect(self.open_folder_dialog)  # 'btnSelectFolder' está diretamente acessível
-
-        # Atualiza o QTextBrowser com o nome da camada ativa
-        # self.update_active_layer_name()
-
-        # Atualiza o QWidgetLista com os campos da camada ativa
-        # self.populate_field_list()
-
-        # Conectando o botão OK do QDialogButtonBox ao método
-        # self.btnBox.accepted.connect(self.on_ok_clicked)
+        # Connect the select folder button to the corresponding method
+        self.btnSelectFolder.clicked.connect(self.open_folder_dialog)
 
     def open_folder_dialog(self):
+        """Opens a dialog to select an existing operating system folder."""
+
         # Open the dialog to select a folder
         folder = QFileDialog.getExistingDirectory(self, "Select Folder")
 
+        # Checks if a folder is selected
         if folder:
-            # Set the folder path in the QTextBrowser (supondo que o QTextBrowser seja chamado de txtSelectFolder)
+
+            # Set the folder path in the QTextBrowser
             self.txtSelectFolder.setPlainText(folder)
-        else:
-            # Se quiser, você pode adicionar uma mensagem de aviso aqui
-            self.txtSelectFolder.setPlainText("No folder was selected.")  # Atualiza o QTextBrowser informando que nenhuma pasta foi selecionada
-
-    def update_active_layer_name(self):
-        """Atualiza o QTextBrowser com o nome da camada ativa."""
-        layer = self.iface.activeLayer()  # Obter camada ativa através da interface do QGIS
-
-        if layer:
-            self.txtActiveLayer.setPlainText(layer.name())  # Atualiza o QTextBrowser com o nome
-        else:
-            self.txtActiveLayer.setPlainText("No active layer selected.")  # Mensagem quando não há camada ativa
-
-    def populate_field_list(self):
-        # Limpa o QListWidget antes de adicionar novos itens
-        self.lstFields.clear()
-
-        # Obtém a camada ativa
-        layer = self.iface.activeLayer()
-        
-        if layer:
-            # Obtém os nomes dos campos
-            fields = layer.fields().names()
-            
-            # Adiciona cada campo ao QListWidget
-            self.lstFields.addItems(fields)
-        else:
-            QMessageBox.warning(self, "Atenção", "Não há camada ativa selecionada.")
-
-    def on_ok_clicked(self):
-        """Método chamado ao clicar no botão OK."""
-        selected_fields = self.get_selected_fields()
-        
-        # Caso os campos selecionados sejam obtidos com sucesso
-        if selected_fields:
-            folder = self.txtSelectFolder.toPlainText()  # Obtém a pasta selecionada
-            self.save_polygon_coordinates(selected_fields, folder)
-        else:
-            QMessageBox.warning(self, "Atenção", "Nenhum campo selecionado.")
-
-    def save_polygon_coordinates(self, selected_fields, folder):
-        """Salva as coordenadas dos polígonos selecionados em arquivos de texto."""
-        layer = self.iface.activeLayer()
-        
-        if layer:
-            features = layer.selectedFeatures()
-
-            for feature in features:
-                # Constrói o nome do arquivo
-                file_name = self.construct_file_name(feature, selected_fields)
-                file_path = os.path.join(folder, f"{file_name}.txt")
-                
-                # Salva as coordenadas no arquivo
-                with open(file_path, 'w') as f:
-                    geometry = feature.geometry()
-                    vertices = list(geometry.vertices())
-
-                    # Salva os vértices na ordem original
-                    for vertex in vertices[:-1]:
-                        f.write(f"{vertex.x()} {vertex.y()}\n")
-
-            QMessageBox.information(self, "Concluído", "Todos os arquivos foram salvos com sucesso!")
-        else:
-            QMessageBox.warning(self, "Atenção", "Não há camada ativa selecionada.")
-
-    def construct_file_name(self, feature, selected_fields):
-        """Constrói o nome do arquivo com base nos campos selecionados e seus valores."""
-        field_values = []
-        for field in selected_fields:
-            value = feature[field]  # Obtém o valor do campo
-            field_values.append(f"{field}-{value}")
-
-        # Une os valores no formato desejado
-        return "_".join(field_values)
-
-    def get_selected_fields(self):
-        """Obtém a lista de campos selecionados pelo usuário."""
-        selected_fields = self.lstFields.selectedItems()
-        selected_field_names = [item.text() for item in selected_fields]
-        return selected_field_names
-
