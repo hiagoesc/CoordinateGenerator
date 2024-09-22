@@ -248,11 +248,14 @@ class CoordinateGenerator:
         if layer is None:
 
             # Display an error message if there is no active layer
-            QMessageBox.warning(self.dlg, "Attention", "There is no active layer selected!")
+            QMessageBox.warning(self.dlg, self.tr(u"Attention"), self.tr(u"There is no active layer!"))
 
             # Returns False if there is no active layer
             return False
         
+        # Displays the name of the active layer in the dialog
+        self.dlg.txtActiveLayer.setPlainText(layer.name())
+
         # Returns the layer if there is active layer
         return layer
     
@@ -260,13 +263,13 @@ class CoordinateGenerator:
         """Populates the QListWidget with the field names from the active layer."""
 
         # Clear the previous list
-        self.dlg.listWidgetFields.clear()
+        self.dlg.lstFields.clear()
 
         # Stores the field names of the active layer
         self.fields = layer.fields().names()
 
         # Adds fields to the list in the dialog
-        self.dlg.listWidgetFields.addItems(self.fields)
+        self.dlg.lstFields.addItems(self.fields)
 
     def get_selected_fields(self):
         """Gets the list of fields selected by the user."""
@@ -277,7 +280,7 @@ class CoordinateGenerator:
         if not self.selected_fields:
 
             # Displays message that no field has been selected
-            QMessageBox.warning(self, "Attention", "No field was selected.")
+            QMessageBox.warning(self.dlg, self.tr(u"Attention"), self.tr(u"No field was selected."))
 
             # Returns False if no field is selected
             return False
@@ -357,7 +360,7 @@ class CoordinateGenerator:
         else:
 
             # Populates the QListWidget with the field names from the active layer
-            self.dlg.populate_field_list(self.active_layer)
+            self.populate_field_list(self.active_layer)
 
         # show the dialog
         self.dlg.show()
@@ -377,7 +380,7 @@ class CoordinateGenerator:
             if not self.folder:
 
                 # Displays message that no folder has been selected
-                QMessageBox.warning(self, "Attention", "No folder selected.")
+                QMessageBox.warning(self.dlg, self.tr(u"Attention"), self.tr(u"No folder selected."))
 
                 # Closes the plugin
                 return
@@ -394,7 +397,7 @@ class CoordinateGenerator:
             self.save_polygon_coordinates(self.active_layer, self.selected_fields, self.folder)
 
             # Display success message
-            QMessageBox.information(self, "Completed", "All files have been saved successfully!")
+            QMessageBox.information(self.dlg, self.tr(u"Completed"), self.tr(u"All files have been saved successfully!"))
 
             # Closes the plugin
             return
